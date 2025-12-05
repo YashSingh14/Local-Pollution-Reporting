@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<style>#map{height:70vh}</style>
+{% endblock %}
+{% block content %}
+<h2 class="title">Reports Map</h2>
+<div class="box">
+  <div class="field is-grouped is-grouped-multiline">
+    <div class="control"><input class="input" type="date" id="start"></div>
+    <div class="control"><input class="input" type="date" id="end"></div>
+    <div class="control"><div class="select"><select id="category"><option value="">All Categories</option><option>Plastic</option><option>Sewage</option><option>Air</option><option>Noise</option><option>Other</option></select></div></div>
+    <div class="control"><div class="select"><select id="severity"><option value="">All Severity</option><option>Low</option><option>Medium</option><option>High</option></select></div></div>
+    <div class="control"><div class="select"><select id="status"><option value="">All Status</option><option>Open</option><option>Under Review</option><option>Resolved</option></select></div></div>
+    <div class="control"><input class="input" id="search" placeholder="Search text"></div>
+    <div class="control"><button class="button" onclick="loadReports()">Apply</button></div>
+  </div>
+</div>
+<div id="map"></div>
+<div class="content" id="list"></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+let map = L.map('map').setView([20.5937, 78.9629], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(map);
+let markers = L.markerClusterGroup();
+map.addLayer(markers);
+
+async function loadReports(){
+  markers.clearLayers();
+  const params = new URLSearchParams();
+  const v = id => document.getElementById(id).value;
+  if(v('start')) params.set('start', v('start'));
+  if(v('end')) params.set('end', v('end'));
+  if(v('category')) params.set('category', v('category'));
+  if(v('severity')) params.set('severity', v('severity'));
+  if(v('status')) params.set('status', v('status'));
+  if(v('search')) params.set('search', v('search'));
+  const res = await fetch('/api/reports?' + params.toString());
+  const data = await res.json();
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  data.forEach(r => {
+    const m = L.marker([r.lat, r.lon]);
+    const html = `<div style="min-width:220px">`+
+      `<img src="${r.thumb_url}" alt="${r.title}" style="width:100%;height:auto;border-radius:6px"/>`+
+      `<h4>${r.title}</h4>`+
+      `<p><strong>${r.category}</strong> • ${r.severity} • ${new Date(r.created_at).toLocaleString()}</p>`+
+      `<p>${r.address||''}</p>`+
+      `<p>Reporter: ${r.reporter}</p>`+
+      `</div>`;
+    m.bindPopup(html);
+    markers.addLayer(m);
+
+    const item = document.createElement('div');
+    item.className = 'box';
+    item.innerHTML = `<strong>${r.title}</strong> — ${r.category}/${r.severity} — ${r.status}`;
+    item.onclick = () => { map.setView([r.lat, r.lon], 16); m.openPopup(); };
+    list.appendChild(item);
+  });
+}
+loadReports();
+</script>
+{% endblock %}

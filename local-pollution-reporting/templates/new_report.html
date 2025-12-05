@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="title">New Report</h2>
+<form method="post" enctype="multipart/form-data">
+  <div class="field">
+    <label class="label">Photo (JPEG/PNG/WEBP, ≤10MB)</label>
+    <div class="control"><input class="input" type="file" name="photo" accept="image/*" required></div>
+  </div>
+  <div class="field"><label class="label">Title</label><input class="input" name="title" required></div>
+  <div class="field"><label class="label">Description</label><textarea class="textarea" name="description"></textarea></div>
+  <div class="field">
+    <label class="label">Category</label>
+    <div class="select"><select name="category">
+      <option>Plastic</option><option>Sewage</option><option>Air</option><option>Noise</option><option>Other</option>
+    </select></div>
+  </div>
+  <div class="field">
+    <label class="label">Severity</label>
+    <div class="select"><select name="severity">
+      <option>Low</option><option>Medium</option><option>High</option>
+    </select></div>
+  </div>
+  <div class="field is-grouped">
+    <div class="control is-expanded">
+      <label class="label">Latitude</label>
+      <input class="input" id="lat" name="lat" required>
+    </div>
+    <div class="control is-expanded">
+      <label class="label">Longitude</label>
+      <input class="input" id="lon" name="lon" required>
+    </div>
+    <div class="control">
+      <label class="label">&nbsp;</label>
+      <button class="button" type="button" onclick="useLocation()">Use my location</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Address (optional)</label>
+    <input class="input" name="address" placeholder="Auto-filled if possible">
+  </div>
+  <button class="button is-primary" type="submit">Submit</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function useLocation(){
+  if(!navigator.geolocation){return alert('Geolocation not supported');}
+  navigator.geolocation.getCurrentPosition(function(pos){
+    document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+    document.getElementById('lon').value = pos.coords.longitude.toFixed(6);
+  }, function(){alert('Unable to fetch location');});
+}
+</script>
+{% endblock %}

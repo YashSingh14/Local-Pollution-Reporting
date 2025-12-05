@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="title">My Reports</h2>
+<div id="mine"></div>
+<script>
+async function loadMine(){
+  const res = await fetch('/api/my_reports');
+  const data = await res.json();
+  const root = document.getElementById('mine');
+  root.innerHTML = '';
+  data.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'box';
+    card.innerHTML = `
+      <article class="media">
+        <figure class="media-left"><p class="image is-128x128"><img src="${r.thumb_url}" alt="${r.title}"></p></figure>
+        <div class="media-content">
+          <p><strong>${r.title}</strong> <small>${r.status}</small></p>
+          <p>${r.description||''}</p>
+          <div class="field is-grouped">
+            <input class="input" value="${r.title}" id="t_${r.id}">
+            <input class="input" value="${r.description||''}" id="d_${r.id}">
+            <button class="button is-info" onclick="save('${r.id}')">Save</button>
+            <button class="button is-danger" onclick="delr('${r.id}')">Delete</button>
+          </div>
+        </div>
+      </article>`;
+    root.appendChild(card);
+  });
+}
+async function save(id){
+  const title = document.getElementById('t_'+id).value;
+  const description = document.getElementById('d_'+id).value;
+  const res = await fetch('/api/report/'+id, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({title, description})});
+  const j = await res.json();
+  if(!j.ok) alert(j.error||'Failed'); else loadMine();
+}
+async function delr(id){
+  if(!confirm('Delete this report?')) return;
+  const res = await fetch('/api/report/'+id, {method:'DELETE'});
+  const j = await res.json();
+  if(!j.ok) alert(j.error||'Failed'); else loadMine();
+}
+loadMine();
+</script>
+{% endblock %}

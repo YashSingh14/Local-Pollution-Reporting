@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="columns">
+  <div class="column is-half">
+    <form method="post">
+      <h2 class="title">Login</h2>
+      <div class="field"><label class="label">Email</label><div class="control"><input class="input" type="email" name="email" required></div></div>
+      <div class="field"><label class="label">Password</label><div class="control"><input class="input" type="password" name="password" required></div></div>
+      <div class="buttons">
+        <button class="button is-link" name="action" value="login">Login</button>
+        <button class="button is-info" name="action" value="signup">Sign up</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

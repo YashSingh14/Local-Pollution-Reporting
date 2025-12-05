@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="content">
+  <h1>Welcome</h1>
+  <p>Report polluted areas with photos and locations. Authorities can review and resolve issues from an interactive map.</p>
+  <a class="button is-primary" href="{{ url_for('new_report') }}">Create a Report</a>
+</div>
+{% endblock %}

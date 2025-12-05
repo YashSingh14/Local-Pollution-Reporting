@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="title">Admin</h2>
+<p>Change status of reports and export CSV.</p>
+<div class="field is-grouped">
+  <a class="button is-link" href="/admin/export.csv">Download CSV (all/filtered)</a>
+</div>
+<div id="admin-list"></div>
+<script>
+async function fetchAll(){
+  const res = await fetch('/api/reports');
+  return res.json();
+}
+async function setStatus(id, status){
+  const res = await fetch('/api/report/'+id+'/status', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status})});
+  const j = await res.json();
+  if(!j.ok) alert(j.error||'Failed'); else loadAdmin();
+}
+async function loadAdmin(){
+  const data = await fetchAll();
+  const root = document.getElementById('admin-list');
+  root.innerHTML = '';
+  data.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'box';
+    el.innerHTML = `<strong>${r.title}</strong> — ${r.status} — ${r.category}/${r.severity}
+      <div class="buttons">
+        <button class="button" onclick="setStatus('${r.id}','Under Review')">Mark Under Review</button>
+        <button class="button is-success" onclick="setStatus('${r.id}','Resolved')">Resolve</button>
+      </div>`;
+    root.appendChild(el);
+  });
+}
+loadAdmin();
+</script>
+{% endblock %}
